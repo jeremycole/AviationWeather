@@ -22,8 +22,7 @@ import java.util.Locale;
 class AvWx {
     private static String sApiUriPrefix = "http://api.av-wx.com/";
     private RequestQueue mRequestQueue;
-    // TODO: The 'X' format doesn't exist on at least API 22. When was it introduced?
-    private SimpleDateFormat mDateParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX",
+    private SimpleDateFormat mDateParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ",
             Locale.US);
 
     interface MetarListener {
@@ -68,7 +67,9 @@ class AvWx {
                         report.getString("station_id"),
                         report.getString("raw_text"));
                 try {
-                    metar.setObservationTime(mDateParser.parse(report.getString("observation_time")));
+                    String date = report.getString("observation_time");
+                    date = date.replaceFirst("Z", "+0000");
+                    metar.setObservationTime(mDateParser.parse(date));
                 } catch (ParseException e) {
                     Log.i("Metar", e.toString());
                     metar.setObservationTime(null);
