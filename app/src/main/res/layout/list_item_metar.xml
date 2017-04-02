@@ -4,8 +4,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="us.jcole.aviationweather.MetarActivity">
+    android:layout_height="wrap_content"
+    android:layout_marginTop="10dp"
+    android:layout_marginBottom="10dp"
+    android:layout_marginLeft="8dp"
+    android:layout_marginRight="8dp"
+    tools:context="us.jcole.aviationweather.MetarListFragment">
 
     <GridLayout
         android:layout_width="match_parent"
@@ -59,13 +63,11 @@
         <TextView
             android:id="@+id/metar_text"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:text="metar_text"
-            android:textSize="16dp"
+            android:textSize="16sp"
             android:fontFamily="monospace"
-            android:layout_marginTop="10dp"
-            android:layout_marginLeft="4dp"
-            android:layout_marginRight="4dp"/>
+            android:layout_marginTop="10dp"/>
     </GridLayout>
 
 </GridLayout>

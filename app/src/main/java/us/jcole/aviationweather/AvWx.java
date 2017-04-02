@@ -16,29 +16,47 @@ import org.json.JSONObject;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Locale;
 
-public class AvWx {
+class AvWx {
     private static String sApiUriPrefix = "http://api.av-wx.com/";
     private RequestQueue mRequestQueue;
-    private SimpleDateFormat mDateParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+    // TODO: The 'X' format doesn't exist on at least API 22. When was it introduced?
+    private SimpleDateFormat mDateParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX",
+            Locale.US);
 
-    public interface MetarResponse {
-        void onResponse(Metar metar);
+    interface MetarListener {
+        void onMetar(Metar metar);
     }
 
-    public AvWx(Context context) {
+    AvWx(Context context) {
         mRequestQueue = Volley.newRequestQueue(context);
     }
 
-    static String getMetarUri(String identifier) {
-        return sApiUriPrefix + "metar/" + identifier;
+    private static String getDelimitedString(String delimiter, List<String> stringList) {
+        String delimitedString = "";
+
+        int i = 0;
+        for (String str : stringList) {
+            if (i > 0)
+                delimitedString += delimiter;
+            delimitedString += str;
+            i++;
+        }
+
+        return delimitedString;
     }
 
-    static String getTafUri(String identifier) {
-        return sApiUriPrefix + "taf/" + identifier;
+    private static String getMetarUri(List<String> identifiers) {
+        return sApiUriPrefix + "metar/" + getDelimitedString(",", identifiers);
     }
 
-    public void parseAvWxJsonMetars(MetarResponse metarResponse, String jsonResponse) {
+    private static String getTafUri(List<String> identifiers) {
+        return sApiUriPrefix + "taf/" + getDelimitedString(",", identifiers);
+    }
+
+    private void parseAvWxJsonMetars(MetarListener metarListener, String jsonResponse) {
         JSONObject jsonObject;
         try {
             jsonObject = new JSONObject(jsonResponse);
@@ -58,22 +76,21 @@ public class AvWx {
 
                 metar.setName(report.getString("name"));
                 metar.setFlightCategory(report.getString("flight_category"));
-                metarResponse.onResponse(metar);
+                metarListener.onMetar(metar);
             }
         } catch(JSONException e) {
-            return;
         }
 
     }
 
-    public void fetchMetarCollection(final String identifier, final MetarResponse metarResponse) {
-        String metarUri = getMetarUri(identifier);
+    void fetchMetars(final List<String> identifiers, final MetarListener metarListener) {
+        String metarUri = getMetarUri(identifiers);
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, metarUri,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        parseAvWxJsonMetars(metarResponse, response);
+                        parseAvWxJsonMetars(metarListener, response);
                     }
                 },
                 new Response.ErrorListener() {
